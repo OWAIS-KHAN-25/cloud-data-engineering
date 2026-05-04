@@ -1,156 +1,196 @@
--- Left Join 
-
-SELECT   
-	p.product_name,
-	oi.order_id
-FROM 
-	production.products p -- left table
-left JOIN SALES.order_items oi -- right table
-	ON p.product_id = oi.product_id
-order by order_id;
-
--- product_name , order_id, order_date, item_id 
--- left 
-
-select 
-	p.product_name,
-	oi.order_id,
-	oi.item_id,
-	o.order_date
-from production.products p
-left join sales.order_items oi
-	on oi.product_id = p.product_id
-left join sales.orders o
-	on o.order_id = oi.order_id
-order by order_date;
+-- ============================================================
+-- SQL JOINS - Class 03
+-- ============================================================
 
 
+-- ============================================================
+-- LEFT JOIN
+-- ============================================================
 
-select 
-	*
-from production.products p
-left join sales.order_items oi
-	on oi.product_id = p.product_id
-left join sales.orders o
-	on o.order_id = oi.order_id
-
--- right join 
-select product_name, order_id from 
-	sales.order_items oi -- left table
-right join production.products p -- right table 
-	on p.product_id = oi.product_id
-order by order_id
-
-select 
-	*
-from production.products p
-left join sales.order_items oi
-	on oi.product_id = p.product_id
-
--- right
-
-select * from  sales.orders o
-right join  sales.stores st
-	on st.store_id = o.store_id;
+-- Returns all products, including those with no orders (NULL order_id)
+SELECT
+    p.product_name,
+    oi.order_id
+FROM production.products p
+LEFT JOIN sales.order_items oi
+    ON p.product_id = oi.product_id
+ORDER BY order_id;
 
 
-select product_name, order_id from 
-	sales.order_items oi -- left table
-full join production.products p -- right table 
-	on p.product_id = oi.product_id
-order by order_id;
+-- Left join across 3 tables: products → order_items → orders
+SELECT
+    p.product_name,
+    oi.order_id,
+    oi.item_id,
+    o.order_date
+FROM production.products p
+LEFT JOIN sales.order_items oi
+    ON oi.product_id = p.product_id
+LEFT JOIN sales.orders o
+    ON o.order_id = oi.order_id
+ORDER BY order_date;
 
 
-SELECT c.id as candid_id,
-		e.id as emp_id,
-		c.fullname
+-- All columns version of the 3-table left join
+SELECT *
+FROM production.products p
+LEFT JOIN sales.order_items oi
+    ON oi.product_id = p.product_id
+LEFT JOIN sales.orders o
+    ON o.order_id = oi.order_id;
+
+
+-- ============================================================
+-- RIGHT JOIN
+-- ============================================================
+
+-- Equivalent to the left join above but with tables swapped
+SELECT
+    product_name,
+    order_id
+FROM sales.order_items oi
+RIGHT JOIN production.products p
+    ON p.product_id = oi.product_id
+ORDER BY order_id;
+
+
+-- All columns: products with or without matching order_items
+SELECT *
+FROM production.products p
+LEFT JOIN sales.order_items oi
+    ON oi.product_id = p.product_id;
+
+
+-- All stores, including those with no orders
+SELECT *
+FROM sales.orders o
+RIGHT JOIN sales.stores st
+    ON st.store_id = o.store_id;
+
+
+-- ============================================================
+-- FULL JOIN
+-- ============================================================
+
+-- Returns all rows from both tables; NULLs where no match exists
+SELECT
+    product_name,
+    order_id
+FROM sales.order_items oi
+FULL JOIN production.products p
+    ON p.product_id = oi.product_id
+ORDER BY order_id;
+
+
+-- ============================================================
+-- INNER JOIN
+-- ============================================================
+
+-- Candidates who are also employees (matched by full name)
+SELECT
+    c.id  AS candid_id,
+    e.id  AS emp_id,
+    c.fullname
 FROM hr.candidates c
-inner JOIN hr.employees  e
-	ON c.fullname = e.fullname;
+INNER JOIN hr.employees e
+    ON c.fullname = e.fullname;
 
 
-SELECT c.id as candid_id,
-		e.id as emp_id,
-		c.fullname
+-- ============================================================
+-- LEFT / RIGHT / FULL JOIN on hr tables
+-- ============================================================
+
+-- All candidates; shows NULL emp_id if not an employee
+SELECT
+    c.id  AS candid_id,
+    e.id  AS emp_id,
+    c.fullname
 FROM hr.candidates c
-left JOIN hr.employees  e
-	ON c.fullname = e.fullname;
+LEFT JOIN hr.employees e
+    ON c.fullname = e.fullname;
 
 
-SELECT c.id as candid_id,
-		e.id as emp_id,
-		e.fullname
+-- All employees; shows NULL candid_id if not a candidate
+SELECT
+    c.id  AS candid_id,
+    e.id  AS emp_id,
+    e.fullname
 FROM hr.candidates c
-right JOIN hr.employees  e
-	ON c.fullname = e.fullname;
+RIGHT JOIN hr.employees e
+    ON c.fullname = e.fullname;
 
-SELECT c.id as candid_id,
-		e.id as emp_id,
-		e.fullname as emp_name,
-		c.fullname as candid_name
+
+-- All candidates and all employees; NULLs where no name match
+SELECT
+    c.id        AS candid_id,
+    e.id        AS emp_id,
+    e.fullname  AS emp_name,
+    c.fullname  AS candid_name
 FROM hr.candidates c
-full JOIN hr.employees  e
-	ON c.fullname = e.fullname;
-
-select * from hr.candidates;
-select * from hr.employees;
+FULL JOIN hr.employees e
+    ON c.fullname = e.fullname;
 
 
--- cross join 
-
--- Syntax
-
--- Select select_list 
--- from table t1
--- cross join table t2;
-
--- cross products, stores 
--- products 321
--- stores 3
--- 963
-
-select *	
-	from production.products
-cross join sales.stores;
-
-select *	
-	from production.products
-cross join sales.order_items;
-
-select * from sales.order_items; -- 4722
-
--- Self Join 
--- Syntax
-
--- SELECT select_list
--- from table t1
--- inner/left/right join table t2
-
--- Staff name, manager_name
-select 
-	e.staff_id emp_staff_id,
-	e.first_name + ' ' + e.last_name as staff_name,
-	m.staff_id as manager_staff_id,
-	m.first_name + ' ' + m.last_name as manager_name
-from 
-	sales.staffs e
-inner join sales.staffs m
-	on m.staff_id = e.manager_id ;
-
-select * from sales.staffs;
-
--- self join on customers
--- customer_name 1, customer_name 2
--- customers from same city (AND t1.city = t2.city)
+-- Quick look at the hr tables
+SELECT * FROM hr.candidates;
+SELECT * FROM hr.employees;
 
 
-select 
-	c1.city, 
-	c1.first_name + ' ' + c1.last_name as customer_1,
-	c2.first_name + ' ' + c2.last_name as customer_2
-from sales.customers c1 
-inner join sales.customers c2 
-	on c1.customer_id > c2.customer_id
-	AND c1.city = c2.city
-where c1.city= 'Albany'
-order by city;
+-- ============================================================
+-- CROSS JOIN
+-- ============================================================
+
+-- Syntax:
+--   SELECT select_list
+--   FROM table t1
+--   CROSS JOIN table t2;
+
+-- Produces Cartesian product: 321 products × 3 stores = 963 rows
+SELECT *
+FROM production.products
+CROSS JOIN sales.stores;
+
+
+-- Cartesian product: products × order_items (large result set)
+SELECT *
+FROM production.products
+CROSS JOIN sales.order_items;
+
+-- Reference count for order_items
+SELECT * FROM sales.order_items; -- 4722 rows
+
+
+-- ============================================================
+-- SELF JOIN
+-- ============================================================
+
+-- Syntax:
+--   SELECT select_list
+--   FROM table t1
+--   INNER/LEFT/RIGHT JOIN table t2 ON ...
+
+-- Each staff member paired with their manager
+SELECT
+    e.staff_id                          AS emp_staff_id,
+    e.first_name + ' ' + e.last_name    AS staff_name,
+    m.staff_id                          AS manager_staff_id,
+    m.first_name + ' ' + m.last_name    AS manager_name
+FROM sales.staffs e
+INNER JOIN sales.staffs m
+    ON m.staff_id = e.manager_id;
+
+
+SELECT * FROM sales.staffs;
+
+
+-- Customers from the same city, avoiding duplicate pairs (c1.id > c2.id)
+SELECT
+    c1.city,
+    c1.first_name + ' ' + c1.last_name  AS customer_1,
+    c2.first_name + ' ' + c2.last_name  AS customer_2
+FROM sales.customers c1
+INNER JOIN sales.customers c2
+    ON  c1.customer_id > c2.customer_id
+    AND c1.city = c2.city
+WHERE c1.city = 'Albany'
+ORDER BY city;
